@@ -1,4 +1,5 @@
 #include "InterfacePointers.hpp"
+#include "InterfaceFinder.hpp"
 #include "FunctionPointers.hpp"
 #include "Symbols.hpp"
 
@@ -21,13 +22,36 @@ namespace InterfacePointers
 	static SymbolFinder symbol_finder;
 
 	static const char filesystem_name[] = "VFileSystem022";
+	static const char filesystem_prefix[] = "VFileSystem";
 	static const char vengineserver_name[] = "VEngineServer021";
+	static const char vengineserver_prefix[] = "VEngineServer";
 	static const char vengineclient_name[] = "VEngineClient015";
+	static const char vengineclient_prefix[] = "VEngineClient";
 	static const char cvar_name[] = "VEngineCvar004";
+	static const char cvar_prefix[] = "VEngineCvar";
 	static const char servergamedll_name[] = "ServerGameDLL009";
+	static const char servergamedll_prefix[] = "ServerGameDLL";
 	static const char networkstringtableserver_name[] = "VEngineServerStringTable001";
+	static const char networkstringtableserver_prefix[] = "VEngineServerStringTable";
 	static const char networkstringtableclient_name[] = "VEngineClientStringTable001";
+	static const char networkstringtableclient_prefix[] = "VEngineClientStringTable";
 	static const char playerinfomanager_name[] = "PlayerInfoManager002";
+	static const char playerinfomanager_prefix[] = "PlayerInfoManager";
+
+	template<class T>
+	static inline T *ResolveInterface(
+		const SourceSDK::FactoryLoader &loader, const char *name, const char *prefix
+	)
+	{
+		T *iface_pointer = loader.GetInterface<T>( name );
+		if( iface_pointer == nullptr )
+		{
+			const SourceSDK::InterfaceFinder finder( loader );
+			iface_pointer = finder.GetInterface<T>( prefix );
+		}
+
+		return iface_pointer;
+	}
 
 	template<class T>
 	static inline T *ResolveSymbol(
@@ -88,7 +112,9 @@ namespace InterfacePointers
 				if( iface_pointer == nullptr )
 				{
 					SourceSDK::FactoryLoader filesystem_loader( "filesystem_stdio" );
-					iface_pointer = filesystem_loader.GetInterface<IFileSystem>( filesystem_name );
+					iface_pointer = ResolveInterface<IFileSystem>(
+						filesystem_loader, filesystem_name, filesystem_prefix
+					);
 				}
 
 				return iface_pointer;
@@ -100,8 +126,8 @@ namespace InterfacePointers
 				if( iface_pointer == nullptr )
 				{
 					SourceSDK::FactoryLoader engine_loader( "engine" );
-					iface_pointer = engine_loader.GetInterface<INetworkStringTableContainer>(
-						networkstringtableclient_name
+					iface_pointer = ResolveInterface<INetworkStringTableContainer>(
+						engine_loader, networkstringtableclient_name, networkstringtableclient_prefix
 					);
 				}
 
@@ -157,7 +183,9 @@ namespace InterfacePointers
 				if( iface_pointer == nullptr )
 				{
 					SourceSDK::FactoryLoader filesystem_loader( "filesystem_stdio" );
-					iface_pointer = filesystem_loader.GetInterface<IFileSystem>( filesystem_name );
+					iface_pointer = ResolveInterface<IFileSystem>(
+						filesystem_loader, filesystem_name, filesystem_prefix
+					);
 				}
 
 				return iface_pointer;
@@ -169,8 +197,8 @@ namespace InterfacePointers
 				if( iface_pointer == nullptr )
 				{
 					SourceSDK::FactoryLoader engine_loader( "engine" );
-					iface_pointer = engine_loader.GetInterface<INetworkStringTableContainer>(
-						networkstringtableserver_name
+					iface_pointer = ResolveInterface<INetworkStringTableContainer>(
+						engine_loader, networkstringtableserver_name, networkstringtableserver_prefix
 					);
 				}
 
@@ -183,8 +211,8 @@ namespace InterfacePointers
 				if( iface_pointer == nullptr )
 				{
 					SourceSDK::FactoryLoader server_loader( "server" );
-					auto player_info_manager = server_loader.GetInterface<IPlayerInfoManager>(
-						playerinfomanager_name
+					auto player_info_manager = ResolveInterface<IPlayerInfoManager>(
+						server_loader, playerinfomanager_name, playerinfomanager_prefix
 					);
 					if( player_info_manager != nullptr )
 						iface_pointer = player_info_manager->GetGlobalVars( );
@@ -201,7 +229,9 @@ namespace InterfacePointers
 		if( iface_pointer == nullptr )
 		{
 			SourceSDK::FactoryLoader engine_loader( "engine" );
-			iface_pointer = engine_loader.GetInterface<IVEngineServer>( vengineserver_name );
+			iface_pointer = ResolveInterface<IVEngineServer>(
+				engine_loader, vengineserver_name, vengineserver_prefix
+			);
 		}
 
 		return iface_pointer;
@@ -213,7 +243,9 @@ namespace InterfacePointers
 		if( iface_pointer == nullptr )
 		{
 			SourceSDK::FactoryLoader engine_loader( "engine" );
-			iface_pointer = engine_loader.GetInterface<IVEngineClient>( vengineclient_name );
+			iface_pointer = ResolveInterface<IVEngineClient>(
+				engine_loader, vengineclient_name, vengineclient_prefix
+			);
 		}
 
 		return iface_pointer;
@@ -225,7 +257,7 @@ namespace InterfacePointers
 		if( iface_pointer == nullptr )
 		{
 			SourceSDK::FactoryLoader vstdlib_loader( "vstdlib" );
-			iface_pointer = vstdlib_loader.GetInterface<ICvar>( cvar_name );
+			iface_pointer = ResolveInterface<ICvar>( vstdlib_loader, cvar_name, cvar_prefix );
 		}
 
 		return iface_pointer;
@@ -237,7 +269,9 @@ namespace InterfacePointers
 		if( iface_pointer == nullptr )
 		{
 			SourceSDK::FactoryLoader server_loader( "server" );
-			iface_pointer = server_loader.GetInterface<IServerGameDLL>( servergamedll_name );
+			iface_pointer = ResolveInterface<IServerGameDLL>(
+				server_loader, servergamedll_name, servergamedll_prefix
+			);
 		}
 
 		return iface_pointer;

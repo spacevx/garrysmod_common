@@ -25,3 +25,4 @@ group("garrysmod_common")
 
 		IncludeHelpers()
 		IncludeScanning()
+		IncludeDetouring()
