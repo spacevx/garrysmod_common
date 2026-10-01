@@ -27,8 +27,10 @@ namespace GarrysMod
 		class ILuaThreadedCall
 		{
 		public:
-			virtual void Init( ) = 0; // NOTE: Always called on the main thread, so if you need to prepare something there, you can do it in here.
-			virtual void Run( ILuaBase* ) = 0; // NOTE: After the call was executed, it won't be deleted! So call `delete this;` or reuse it.
+			virtual ~ILuaThreadedCall( ) { }
+			virtual bool IsFinished( ) = 0;
+			virtual void DoFinish( ILuaBase * ) = 0;
+			virtual void DestroyForced( ) = 0;
 		};
 
 		class ILuaInterface : public ILuaBase
@@ -43,8 +45,8 @@ namespace GarrysMod
 			virtual void PushLuaFunction( CFunc func ) = 0;
 			virtual void LuaError( const char *err, int index ) = 0;
 			virtual void TypeError( const char *name, int index ) = 0;
-			virtual void CallInternal( int args, int rets ) = 0;
-			virtual void CallInternalNoReturns( int args ) = 0;
+			virtual bool CallInternal( int args, int rets ) = 0;
+			virtual bool CallInternalNoReturns( int args ) = 0;
 			virtual bool CallInternalGetBool( int args ) = 0;
 			virtual const char *CallInternalGetString( int args ) = 0;
 			virtual bool CallInternalGet( int args, ILuaObject *obj ) = 0;
@@ -84,14 +86,14 @@ namespace GarrysMod
 			virtual void PushPath( const char *path ) = 0;
 			virtual void PopPath( ) = 0;
 			virtual const char *GetPath( ) = 0;
-			virtual int GetColor( int index ) = 0;
-			virtual void *PushColor( Color color ) = 0; // ToDo: This seems to return something, but it hasn't been figured out what yet.
+			virtual Color GetColor( int index ) = 0;
+			virtual void PushColor( Color color ) = 0;
 			virtual int GetStack( int level, lua_Debug *dbg ) = 0;
 			virtual int GetInfo( const char *what, lua_Debug *dbg ) = 0;
 			virtual const char *GetLocal( lua_Debug *dbg, int n ) = 0;
 			virtual const char *GetUpvalue( int funcIndex, int n ) = 0;
 			virtual bool RunStringEx( const char *filename, const char *path, const char *stringToRun, bool run, bool printErrors, bool dontPushErrors, bool noReturns ) = 0;
-			virtual size_t GetDataString( int index, const char **str ) = 0;
+			virtual unsigned int GetDataString( int index, const char **str ) = 0;
 			virtual void ErrorFromLua( const char *fmt, ... ) = 0;
 			// Returns "<nowhere>" if nothing was found.
 			virtual const char *GetCurrentLocation( ) = 0;
@@ -100,18 +102,19 @@ namespace GarrysMod
 			virtual void GetCurrentFile( std::string &outStr ) = 0;
 			virtual bool CompileString( Bootil::Buffer &dumper, const std::string &stringToCompile ) = 0;
 			virtual bool CallFunctionProtected( int, int, bool ) = 0;
-			virtual void Require( const char *name ) = 0;
-			virtual const char *GetActualTypeName( int type ) = 0;
+			virtual bool Require( const char *name ) = 0;
+			virtual const char *GetActualTypeName( int index ) = 0;
 			virtual void PreCreateTable( int arrelems, int nonarrelems ) = 0;
 			virtual void PushPooledString( int index ) = 0;
 			virtual const char *GetPooledString( int index ) = 0;
-			virtual int AddThreadedCall( ILuaThreadedCall *call ) = 0; // NOTE: Returns the number of queried threaded calls.
+			virtual void AddThreadedCall( ILuaThreadedCall *call ) = 0;
 			virtual void AppendStackTrace( char *, unsigned int ) = 0;
 			virtual ConVar *CreateConVar( const char *name, const char *defaultValue, const char *helpString, int flags ) = 0;
 			virtual ConCommand *CreateConCommand( const char *name, const char *helpString, int flags, void ( *callback )( const CCommand & ), int ( *completionFunc )( const char *, char ( * )[128] ) ) = 0;
 			virtual const char *CheckStringOpt( int iStackPos, const char *def ) = 0;
 			virtual double CheckNumberOpt( int iStackPos, double def ) = 0;
 			virtual int RegisterMetaTable( const char *name, ILuaObject *tbl ) = 0;
+			// NOTE: Windows has one more slot (deleting destructor) that linux don't have (not declared here)
 		};
 
 		class CLuaInterface : public ILuaInterface
@@ -159,7 +162,7 @@ namespace GarrysMod
 			int m_iCurrentTempObject;
 			ILuaObject *m_pGlobal;
 			ILuaObject *m_pStringPool;
-			unsigned char m_iMetaTableIDCounter;
+			int m_iMetaTableIDCounter;
 			// Their index is based off their type. means m_MetaTables[Type::Entity] returns the Entity metatable though they can be NULL as its only filled by CreateMetaTableType.
 			GarrysMod::Lua::ILuaObject *m_pMetaTables[255];
 		};

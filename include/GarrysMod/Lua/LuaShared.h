@@ -7,7 +7,6 @@
 
 class LuaClientDatatableHook;
 class IGet;
-class CSteamAPIContext;
 
 namespace Bootil
 {
@@ -75,14 +74,14 @@ namespace GarrysMod
 		public:
 			virtual ~ILuaShared( ) = 0;
 			// NOTE: magicBool - could maybe be bIsDedicated? true if its a dedicated server?
-			virtual void Init( void *( *interfaceFactory )( const char *, int * ), bool magicBool, CSteamAPIContext *context, IGet *pGet ) = 0;
+			virtual bool Init( void *( *interfaceFactory )( const char *, int * ), bool magicBool, IGet *pGet ) = 0;
 			virtual void Shutdown( ) = 0;
 			virtual void DumpStats( ) = 0;
 			virtual ILuaInterface *CreateLuaInterface( unsigned char realm, bool unknown ) = 0;
 			virtual void CloseLuaInterface( ILuaInterface *luaInterface ) = 0;
 			virtual ILuaInterface *GetLuaInterface( unsigned char realm ) = 0;
 			virtual LuaFile *LoadFile( const std::string &path, const std::string &pathId, bool fromDatatable, bool fromFile ) = 0;
-			virtual LuaFile *GetCache( const std::string &fileName );
+			virtual LuaFile *GetCache( const std::string &fileName ) = 0;
 			virtual void MountLua( const char *pathID ) = 0;
 			virtual void MountLuaAdd( const char *file, const char *pathID ) = 0;
 			virtual void UnMountLua( const char *pathID ) = 0;

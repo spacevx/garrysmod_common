@@ -22,7 +22,10 @@ namespace GarrysMod
 {
 	namespace Lua
 	{
-		class ILuaObject
+		// NOTE: Split in two classes like Garry's Mod else MSVC groups (SetMember/SetMemberDouble) overloads and shifts every slot after them
+		class ILuaObject;
+
+		class ILuaObject_001
 		{
 		public:
 			virtual void Set( ILuaObject *obj ) = 0;
@@ -46,10 +49,10 @@ namespace GarrysMod
 			virtual int GetMemberInt( const char *name, int i = 0 ) = 0;
 			virtual float GetMemberFloat( const char *name, float f = 0.0f ) = 0;
 			virtual const char *GetMemberStr( const char *name, const char *s = "" ) = 0;
-			virtual void *GetMemberUserData( const char *name, void *u = 0 ) = 0;
-			virtual void *GetMemberUserData( float name, void *u = 0 ) = 0;
-			virtual ILuaObject *GetMember( const char *name, ILuaObject *obj ) = 0;
-			virtual ILuaObject *GetMember( ILuaObject *key, ILuaObject *obj ) = 0;
+			virtual void *GetMemberUserData_DontUseMe( const char *name, void *u = 0 ) = 0;
+			virtual void *GetMemberUserData_DontUseMe( float name, void *u = 0 ) = 0;
+			virtual void GetMember( const char *name, ILuaObject *obj ) = 0;
+			virtual void GetMember( ILuaObject *key, ILuaObject *obj ) = 0;
 
 			virtual void SetMetaTable( ILuaObject *obj ) = 0;
 			virtual void SetUserData( void *obj ) = 0;
@@ -63,7 +66,7 @@ namespace GarrysMod
 			virtual bool isFunction( ) = 0;
 			virtual bool isUserData( ) = 0;
 
-			virtual ILuaObject *GetMember( float fKey, ILuaObject* obj ) = 0;
+			virtual void GetMember( float fKey, ILuaObject *obj ) = 0;
 
 			virtual void *Remove_Me_1( const char *name, void * = 0 ) = 0;
 
@@ -100,16 +103,20 @@ namespace GarrysMod
 			virtual void SetMemberNil( const char * ) = 0;
 			virtual void SetMemberNil( float ) = 0;
 
-			virtual bool RemoveMe( ) = 0;
+			virtual void RemoveMe( ) = 0;
 
 			virtual void Init( ) = 0;
 
 			virtual void SetFromGlobal( const char * ) = 0;
 
-			virtual int GetStringLen( unsigned int * ) = 0;
+			virtual const char *GetStringLen( unsigned int *len ) = 0;
 
 			virtual unsigned int GetMemberUInt( const char *, unsigned int ) = 0;
+		};
 
+		class ILuaObject : public ILuaObject_001
+		{
+		public:
 			virtual void SetMember( const char *, unsigned long long ) = 0;
 			virtual void SetMember( const char *, int ) = 0;
 			virtual void SetReference( int ) = 0;
@@ -130,40 +137,40 @@ namespace GarrysMod
 			virtual BaseEntity *GetEntity( ) = 0;
 			virtual void SetEntity( BaseEntity * ) = 0;
 
-			virtual void SetMemberVector( const char *, Vector * ) = 0;
-			virtual void SetMemberVector( const char *, Vector & ) = 0;
-			virtual void SetMemberVector( float, Vector * ) = 0;
+			virtual void SetMemberVector( const char *, const Vector * ) = 0;
+			virtual void SetMemberVector( const char *, const Vector & ) = 0;
+			virtual void SetMemberVector( float, const Vector * ) = 0;
 			virtual Vector *GetMemberVector( const char *, const Vector * ) = 0;
 			virtual Vector *GetMemberVector( int ) = 0;
 			virtual Vector *GetVector( ) = 0;
 			virtual bool isVector( ) = 0;
 
-			virtual void SetMemberAngle( const char *, QAngle * ) = 0;
-			virtual void SetMemberAngle( const char *, QAngle & ) = 0;
+			virtual void SetMemberAngle( const char *, const QAngle * ) = 0;
+			virtual void SetMemberAngle( const char *, const QAngle & ) = 0;
 			virtual QAngle *GetMemberAngle( const char *, QAngle * ) = 0;
 			virtual QAngle *GetAngle( ) = 0;
 			virtual bool isAngle( ) = 0;
 
-			virtual void SetMemberMatrix( const char *, VMatrix const * ) = 0;
-			virtual void SetMemberMatrix( const char *, VMatrix const & ) = 0;
-			virtual void SetMemberMatrix( float, VMatrix const * ) = 0;
-			virtual void SetMemberMatrix( int, VMatrix const * ) = 0;
+			virtual void SetMemberMatrix( const char *, const VMatrix * ) = 0;
+			virtual void SetMemberMatrix( const char *, const VMatrix & ) = 0;
+			virtual void SetMemberMatrix( float, const VMatrix * ) = 0;
+			virtual void SetMemberMatrix( int, const VMatrix * ) = 0;
 
 			virtual void SetMemberPhysObject( const char *, IPhysicsObject * ) = 0;
 			virtual double GetMemberDouble( float, double ) = 0;
+			virtual BaseEntity *GetMemberEntity( int, BaseEntity * ) = 0;
+			virtual VMatrix *GetMemberMatrix( int, VMatrix * ) = 0;
+
+			using ILuaObject_001::SetMember;
+			using ILuaObject_001::SetMemberDouble;
 		};
 
 		class CLuaObject : public ILuaObject
 		{
 		public:
-			inline ILuaBase *GetLua( ) const
+			inline int GetLuaStateID( ) const
 			{
-				return m_pLua;
-			}
-
-			inline void SetLua( ILuaBase *Lua )
-			{
-				m_pLua = Lua;
+				return m_iLuaStateID;
 			}
 
 			inline int GetReference( ) const
@@ -180,7 +187,7 @@ namespace GarrysMod
 			bool m_bUserData;
 			int m_iType;
 			int m_iReference;
-			ILuaBase* m_pLua;
+			int m_iLuaStateID;
 		};
 	}
 }
