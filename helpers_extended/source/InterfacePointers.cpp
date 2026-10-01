@@ -2,6 +2,7 @@
 #include "InterfaceFinder.hpp"
 #include "FunctionPointers.hpp"
 #include "Symbols.hpp"
+#include "SymbolResolution.hpp"
 
 #include <GarrysMod/FactoryLoader.hpp>
 
@@ -58,24 +59,7 @@ namespace InterfacePointers
 		SourceSDK::FactoryLoader &loader, const Symbol &symbol
 	)
 	{
-		if( symbol.type == Symbol::Type::None )
-			return nullptr;
-
-#if defined SYSTEM_WINDOWS
-
-		auto iface = reinterpret_cast<T **>( symbol_finder.Resolve(
-			loader.GetModule( ), symbol.name.c_str( ), symbol.length
-		) );
-		return iface != nullptr ? *iface : nullptr;
-
-#elif defined SYSTEM_POSIX
-
-		return reinterpret_cast<T *>( symbol_finder.Resolve(
-			loader.GetModule( ), symbol.name.c_str( ), symbol.length
-		) );
-
-#endif
-
+		return static_cast<T *>( Symbols::Resolution::FindData( symbol_finder, loader, symbol ) );
 	}
 
 	template<class T>
@@ -104,9 +88,9 @@ namespace InterfacePointers
 				if( iface_pointer == nullptr )
 				{
 					SourceSDK::FactoryLoader client_loader( "client" );
-					iface_pointer = ResolveSymbol<IFileSystem>(
-						client_loader, Symbols::g_pFullFileSystem
-					);
+					IFileSystem **variable = ResolveSymbol<IFileSystem *>( client_loader, Symbols::g_pFullFileSystem );
+					if( variable != nullptr )
+						iface_pointer = *variable;
 				}
 
 				if( iface_pointer == nullptr )
@@ -163,16 +147,15 @@ namespace InterfacePointers
 				if( factory == nullptr )
 				{
 					SourceSDK::FactoryLoader dedicated_loader( "dedicated" );
-					iface_pointer = ResolveSymbol<IFileSystem>(
-						dedicated_loader, Symbols::g_pFullFileSystem
-					);
-					if( iface_pointer == nullptr )
+					IFileSystem **variable = ResolveSymbol<IFileSystem *>( dedicated_loader, Symbols::g_pFullFileSystem );
+					if( variable == nullptr )
 					{
 						SourceSDK::FactoryLoader server_loader( "server" );
-						iface_pointer = ResolveSymbol<IFileSystem>(
-							server_loader, Symbols::g_pFullFileSystem
-						);
+						variable = ResolveSymbol<IFileSystem *>( server_loader, Symbols::g_pFullFileSystem );
 					}
+
+					if( variable != nullptr )
+						iface_pointer = *variable;
 				}
 				else
 				{

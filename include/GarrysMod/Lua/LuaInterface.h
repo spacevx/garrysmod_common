@@ -114,7 +114,6 @@ namespace GarrysMod
 			virtual const char *CheckStringOpt( int iStackPos, const char *def ) = 0;
 			virtual double CheckNumberOpt( int iStackPos, double def ) = 0;
 			virtual int RegisterMetaTable( const char *name, ILuaObject *tbl ) = 0;
-			// NOTE: Windows has one more slot (deleting destructor) that linux don't have (not declared here)
 		};
 
 		class CLuaInterface : public ILuaInterface

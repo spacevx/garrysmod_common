@@ -1,5 +1,6 @@
 #include "FunctionPointers.hpp"
 #include "Symbols.hpp"
+#include "SymbolResolution.hpp"
 
 #include <GarrysMod/FactoryLoader.hpp>
 
@@ -23,16 +24,20 @@ namespace FunctionPointers
 		const void *starting_point = nullptr
 	)
 	{
-		if( symbol.type == Symbol::Type::None )
-			return nullptr;
+		return reinterpret_cast<T>( Symbols::Resolution::Find( symbol_finder, loader, symbol, starting_point ) );
+	}
 
-		auto pointer = reinterpret_cast<uint8_t *>( symbol_finder.Resolve(
-			loader.GetModule( ), symbol.name.c_str( ), symbol.length, starting_point
-		) );
-		if( pointer != nullptr )
-			pointer += symbol.offset;
+	template<class T>
+	static inline T *ResolveDataSymbols( SourceSDK::FactoryLoader &loader, const std::vector<Symbol> &symbols )
+	{
+		for( const auto &symbol : symbols )
+		{
+			void *pointer = Symbols::Resolution::FindData( symbol_finder, loader, symbol );
+			if( pointer != nullptr )
+				return static_cast<T *>( pointer );
+		}
 
-		return reinterpret_cast<T>( pointer );
+		return nullptr;
 	}
 
 	template<class T>
@@ -243,24 +248,9 @@ namespace FunctionPointers
 		if( func_pointer != nullptr )
 			return func_pointer;
 
-#if defined SYSTEM_WINDOWS
-
-		const netsockets_t **net_sockets_ptr = ResolveSymbols<const netsockets_t **>( engine_loader, Symbols::net_sockets );
-		if( net_sockets_ptr != nullptr )
-		{
-			net_sockets = *net_sockets_ptr;
-
-			if( net_sockets != nullptr )
-				func_pointer = GetNetSocket;
-	}
-		
-#elif defined SYSTEM_POSIX
-
-		net_sockets = ResolveSymbols<netsockets_t *>( engine_loader, Symbols::net_sockets );
+		net_sockets = ResolveDataSymbols<const netsockets_t>( engine_loader, Symbols::net_sockets );
 		if( net_sockets != nullptr )
 			func_pointer = GetNetSocket;
-
-#endif
 
 		return func_pointer;
 	}

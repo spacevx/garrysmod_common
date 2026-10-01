@@ -6,7 +6,14 @@ namespace Symbols
 {
 
 	const std::vector<Symbol> CBasePlayer_HandleClientLuaError = {
-		Symbol::FromSignature( "\x55\x89\xE5\x57\x56\x53\x83\xEC\x4C\x65\xA1\x2A\x2A\x2A\x2A\x89\x45\xE4" )
+		Symbol::FromName( "_Z20HandleClientLuaErrorP11CBasePlayerPKc" ),
+
+#if defined ARCHITECTURE_X86
+
+		Symbol::FromSignature( "\x55\x89\xE5\x53\x57\x56\x81\xEC\x0C\x03\x00\x00\xE8\x00\x00\x00\x00\x5F" )
+
+#endif
+
 	};
 
 	const std::vector<Symbol> FileSystemFactory = { Symbol::FromName( "_Z17FileSystemFactoryPKcPi" ) };
@@ -14,14 +21,7 @@ namespace Symbols
 	const Symbol g_pFullFileSystem = Symbol::FromName( "g_pFullFileSystem" );
 
 	const std::vector<Symbol> IServer = {
-		Symbol::FromName( "sv" ),
-
-#if defined ARCHITECTURE_X86
-
-		Symbol::FromSignature( "\x2A\x2A\x2A\x2A\x8B\x08\x89\x04\x24\xFF\x51\x28\xF3\x0F\x10\x45" )
-
-#endif
-
+		Symbol::FromName( "sv" )
 	};
 
 	const std::vector<Symbol> CNetChan_ProcessMessages = {
@@ -88,12 +88,9 @@ namespace Symbols
 #endif
 
 	const std::vector<Symbol> GlobalVars = {
+		Symbol::FromName( "gpGlobals" ),
 
-#if defined ARCHITECTURE_X86
-
-		Symbol::FromSignature( "\x2A\x2A\x2A\x2A\x8D\xBD\x2A\x2A\x2A\x2A\x89\x3C\x24\xC7\x44\x24\x2A\x01\x00\x00\x00\xE8" )
-
-#elif defined ARCHITECTURE_X86_64
+#if defined ARCHITECTURE_X86_64
 
 		Symbol::FromSignature( "\x2A\x2A\x2A\x2A\x48\x8D\xBD\x2A\x2A\x2A\x2A\xBE\x01\x00\x00\x00\xE8\x2A\x2A\x2A\x2A\x48\x8D\xBD" )
 
@@ -107,6 +104,19 @@ namespace Symbols
 
 	const std::vector<Symbol> NET_CreateNetChannel;
 
-    const std::vector<Symbol> HandleChange = { Symbol::FromSignature( "\x55\x48\x89\xe5\x53\x48\x81\xec\x88\x00\x00\x00\x48\x89\xfb\x48\x8d\x7d\xc8\x48\x89\xde\xe8\x2A\x2A\x2A\x2A\x8a\x4d\xc8\x89\xc8\x24\x01\x74" ) };
+    const std::vector<Symbol> HandleChange = {
+        Symbol::FromName( "_ZN9GarrysMod11AutoRefresh12HandleChangeERNSt3__112basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEE" ),
+
+#if defined ARCHITECTURE_X86
+
+        Symbol::FromSignature( "\x55\x89\xe5\x53\x57\x56\x83\xec\x5c\x8b\x7d\x08\x8d\x75\xa8\x89\x34\x24" )
+
+#elif defined ARCHITECTURE_X86_64
+
+        Symbol::FromSignature( "\x55\x48\x89\xe5\x53\x48\x81\xec\x88\x00\x00\x00\x48\x89\xfb\x48\x8d\x7d\xc8\x48\x89\xde\xe8\x2A\x2A\x2A\x2A\x8a\x4d\xc8\x89\xc8\x24\x01\x74" )
+
+#endif
+
+    };
 
 }
