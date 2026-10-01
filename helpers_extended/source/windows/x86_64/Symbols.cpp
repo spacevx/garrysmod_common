@@ -11,7 +11,8 @@ namespace Symbols
 	};
 
 	const std::vector<Symbol> FileSystemFactory = {
-		Symbol::FromName( "?FileSystemFactory@@YAPEAXPEBDPEAH@Z" )
+		Symbol::FromName( "?FileSystemFactory@@YAPEAXPEBDPEAH@Z" ),
+		Symbol::FromSignature( "\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\x48\x8B\xDA\x48\x8B\xF9\x48\x8D\x15\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0" )
 	};
 
 	const Symbol g_pFullFileSystem = Symbol::FromName( "?g_pFullFileSystem@@3PEAVIFileSystem@@EA" );
